@@ -14,7 +14,8 @@ expect.extend({
     };
   },
   toBeValidResult(received: unknown) {
-    const pass = received && typeof received === 'object' && 'success' in received;
+    const pass =
+      received && typeof received === 'object' && 'success' in received;
     return {
       pass,
       message: () =>
@@ -26,12 +27,13 @@ expect.extend({
       schema.parse(received);
       return {
         pass: true,
-        message: () => `Expected value to match schema`,
+        message: () => 'Expected value to match schema',
       };
     } catch (error) {
       return {
         pass: false,
-        message: () => `Expected value to match schema but received error: ${error.message}`,
+        message: () =>
+          `Expected value to match schema but received error: ${error.message}`,
       };
     }
   },
@@ -48,4 +50,4 @@ declare global {
   }
 }
 
-export { };
+export {};

@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - .:/workspace:cached
+      - node_modules:/workspace/node_modules
+      - projects:/workspace/projects
+      - ~/.gitconfig:/home/node/.gitconfig:cached
+
+    # Keep the container running
+    command: sleep infinity
+
+    environment:
+      - NODE_ENV=development
+      - TYPESCRIPT_VERSION=~5.7.0
+      - TEMPLATE_REPO=https://github.com/Luxcium/cline-ai-template.git
+      # Increase Node's memory limit
+      - NODE_OPTIONS=--max-old-space-size=4096
+      # Enable TypeScript incremental builds
+      - TSC_COMPILE_ON_ERROR=true
+
+    # Resource constraints
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+    # Health check
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Support for debugging
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+
+    # Network settings
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+
+    # Shared memory size for better performance
+    shm_size: '2gb'
+
+    # Logging configuration
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '50m'
+        max-file: '3'
+
+volumes:
+  node_modules:
+    driver: local
+    driver_opts:
+      type: none
+      device: /workspace/node_modules
+      o: bind
+  projects:
+    driver: local
+    name: template-projects
+    driver_opts:
+      type: none
+      device: /workspace/projects
+      o: bind

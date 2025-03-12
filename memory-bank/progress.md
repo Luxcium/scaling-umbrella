@@ -19,6 +19,10 @@ Initial setup phase - Core infrastructure and type system foundation established
 
 2. Type System
    * Result type implemented with clear success/failure patterns
+   * Settled types hierarchy implemented with comprehensive testing
+   * Base<TBase> type for input aggregation
+   * Delegate function interfaces established
+   * Non-enumerable property patterns defined
    * Type validation foundation
    * Type testing utilities
    * Error handling patterns
@@ -53,7 +57,14 @@ Initial setup phase - Core infrastructure and type system foundation established
 
 ## What's In Progress
 
-1. Type System Enhancement
+1. Core Type System Functions
+   * Main mapping functions implementation
+   * parallelMapping function
+   * serialMapping function
+   * awaitedMapping utility
+   * Generator-based mapping functions
+
+2. Type System Enhancement
    * Additional type utilities
    * More type validation patterns
    * Extended error handling

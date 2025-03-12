@@ -1,0 +1,26 @@
+{
+  "default": true,
+  "MD013": false,
+  "MD024": { "siblings_only": true },
+  "MD029": false,
+  "MD033": {
+    "allowed_elements": ["mermaid", "TBase", "T", "U", "R", "S", "E", "B"]
+  },
+  "MD040": {
+    "allowed_languages": [
+      "typescript",
+      "markdown",
+      "mermaid",
+      "bash",
+      "text",
+      ""
+    ]
+  },
+  "MD041": false,
+  "MD046": {
+    "style": "fenced"
+  },
+  "MD048": {
+    "style": "backtick"
+  }
+}

@@ -104,6 +104,49 @@ flowchart LR
      | { success: false; error: E };
    ```
 
+   * Settled Type Pattern
+
+   ```typescript
+   type Settled<T> = SettledRight<T> | SettledLeft;
+
+   interface SettledRight<T> extends PromiseFulfilledResult<T> {
+     transformStep: number;
+     index: number;
+     currentRejection: null;
+   }
+
+   interface SettledLeft extends PromiseRejectedResult {
+     transformStep: number;
+     index: number;
+     currentRejection: true | false | undefined;
+   }
+   ```
+
+   * Delegate Function Pattern
+
+   ```typescript
+   interface TransformFn<T, U> {
+     (value: T, index: number, array: readonly T[]): Promise<U>;
+   }
+
+   interface LookupFn<S, U> {
+     (value: U, index: number, array: readonly S[]): void;
+   }
+   ```
+
+   * Input Aggregation Pattern
+
+   ```typescript
+   type Base<TBase> =
+     | TBase
+     | Settled<TBase>
+     | PromiseSettledResult<TBase>
+     | SettledRight<TBase>
+     | PromiseFulfilledResult<TBase>
+     | SettledLeft
+     | PromiseRejectedResult;
+   ```
+
    * Type Validator Pattern
 
    ```typescript

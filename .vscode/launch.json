@@ -5,14 +5,8 @@
       "type": "node",
       "request": "launch",
       "name": "Debug Current Test",
-      "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      "args": [
-        "${fileBasename}",
-        "--config",
-        "jest.config.js",
-        "--runInBand",
-        "--no-cache"
-      ],
+      "program": "${workspaceFolder}/node_modules/.bin/jest",
+      "args": ["${relativeFile}", "--runInBand"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "windows": {
@@ -23,22 +17,22 @@
       "type": "node",
       "request": "launch",
       "name": "Debug All Tests",
-      "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      "args": ["--runInBand", "--config", "jest.config.js"],
+      "program": "${workspaceFolder}/node_modules/.bin/jest",
+      "args": ["--runInBand"],
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen"
+      "internalConsoleOptions": "neverOpen",
+      "windows": {
+        "program": "${workspaceFolder}/node_modules/jest/bin/jest"
+      }
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug TypeScript",
+      "name": "Debug Program",
+      "skipFiles": ["<node_internals>/**"],
       "program": "${file}",
       "preLaunchTask": "tsc: build - tsconfig.json",
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-      "sourceMaps": true,
-      "smartStep": true,
-      "internalConsoleOptions": "openOnSessionStart",
-      "console": "integratedTerminal"
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
     }
   ]
 }

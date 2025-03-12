@@ -1,224 +1,220 @@
 # Tutorials
 
-## Getting Started with the TFTDD Template
+## Working with Settled Types
 
-### Prerequisites
+The mapping-tools package provides a robust type system for handling asynchronous transformations with comprehensive error handling.
 
-Before you begin, ensure you have the following installed:
+### Core Types
 
-- Node.js (version 20 or higher)
-- npm or yarn
-- VSCode (recommended)
-
-### Step 1: Clone the Repository
-
-Clone the TFTDD template repository to your local machine:
-
-```bash
-git clone https://github.com/yourusername/tftdd-template.git
-cd tftdd-template
-```
-
-### Step 2: Install Dependencies
-
-Install the necessary dependencies using npm or yarn:
-
-```bash
-npm install
-# or
-yarn install
-```
-
-### Step 3: Run Tests
-
-Run the tests to ensure everything is set up correctly:
-
-```bash
-npm test
-# or
-yarn test
-```
-
-## Type-First Development
-
-### Defining Types
-
-Start by defining your types before implementation. For example, define a `User` type:
+1. Basic Type Structure
 
 ```typescript
-interface User {
-  id: string;
-  name: string;
-  email: string;
+// Represents successful transformation results
+interface SettledRight<T> {
+  status: 'fulfilled';
+  value: T;
+  transformStep: number;
+  index: number;
+  currentRejection: null;
+}
+
+// Represents unsuccessful transformation results
+interface SettledLeft {
+  status: 'rejected';
+  reason: any;
+  currentRejection: true | false | undefined;
+  transformStep: number;
+  index: number;
 }
 ```
 
-### Creating Validators
-
-Create a validator for the `User` type using Zod:
+2. Input Type Flexibility
 
 ```typescript
-import { z } from 'zod';
+// Base type allows multiple input formats
+type Base<TBase> =
+  | TBase                          // Raw value
+  | Settled<TBase>                // Previous transformation result
+  | PromiseSettledResult<TBase>   // Promise.allSettled result
+  | SettledRight<TBase>           // Successful result
+  | PromiseFulfilledResult<TBase> // Promise success
+  | SettledLeft                   // Failed result
+  | PromiseRejectedResult;        // Promise failure
+```
 
-const userSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().min(1),
-  email: z.string().email()
+### Delegate Functions
+
+1. Transform Function
+
+```typescript
+// Transforms input value to output value
+const transform: TransformFn<string, number> = async (
+  value: string,
+  index: number,
+  array: readonly string[]
+): Promise<number> => {
+  return parseInt(value, 10);
+};
+```
+
+2. Lookup Function
+
+```typescript
+// Side-effect only function for successful transformations
+const lookup: LookupFn<string, number> = (
+  value: number,
+  index: number,
+  array: readonly string[]
+): void => {
+  console.log(`Processed value at index ${index}: ${value}`);
+};
+```
+
+3. Validate Function
+
+```typescript
+// Validation with error throwing
+const validate: ValidateFn<string, number> = async (
+  value: number,
+  index: number,
+  array: readonly string[]
+): Promise<void> => {
+  if (isNaN(value)) {
+    throw new Error(`Invalid number at index ${index}`);
+  }
+};
+```
+
+4. Error Lookup Function
+
+```typescript
+// Handle errors during transformation
+const errLookup: ErrLookupFn = (
+  reason: any,
+  index: number,
+  currentRejection: boolean
+): void => {
+  if (currentRejection) {
+    console.error(`New error at index ${index}:`, reason);
+  } else {
+    console.warn(`Previous error at index ${index}:`, reason);
+  }
+};
+```
+
+### Usage Examples
+
+1. Basic Transformation
+
+```typescript
+const collection = ['1', '2', '3'];
+
+// Transform strings to numbers
+const results = await serialMapping(
+  collection,
+  async (value) => parseInt(value, 10)
+);
+
+// Results are type-safe and include metadata
+results.forEach(result => {
+  if (result.status === 'fulfilled') {
+    console.log(`Success: ${result.value}`);
+  } else {
+    console.error(`Error: ${result.reason}`);
+  }
 });
 ```
 
-### External Resources
-
-For more information on Type-First Development, refer to the following resources:
-
-- [TypeScript](https://www.typescriptlang.org/)
-- [Zod](https://github.com/colinhacks/zod)
-
-## Test-Driven Development
-
-### Writing Tests
-
-Write tests before implementing functionality. For example, write a test for creating a user:
+2. With Error Handling
 
 ```typescript
-import { describe, expect, it } from '@jest/globals';
+const collection = ['1', 'not-a-number', '3'];
 
-describe('User Management', () => {
-  it('should create a valid user', () => {
-    const result = createUser({
-      name: 'John Doe',
-      email: 'john@example.com'
-    });
-
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.value.name).toBe('John Doe');
-      expect(result.value.email).toBe('john@example.com');
-    }
-  });
-});
+const results = await serialMapping(
+  collection,
+  // Transform function
+  async (value) => {
+    const num = parseInt(value, 10);
+    if (isNaN(num)) throw new Error(`Invalid number: ${value}`);
+    return num;
+  },
+  // Lookup function
+  (value) => console.log(`Processed: ${value}`),
+  // Validate function
+  async (value) => {
+    if (value < 0) throw new Error('Negative numbers not allowed');
+  },
+  // Error lookup function
+  (reason, index, current) => console.error(`Error at ${index}:`, reason)
+);
 ```
 
-### Implementing Features
+### Type Safety
 
-Implement the feature to make tests pass. For example, implement the `createUser` function:
+1. Generic Type Constraints
 
 ```typescript
-function createUser(input: Omit<User, 'id'>): Result<User> {
-  const id = generateUUID();
-  const user = { id, ...input };
+// Input and output types are tracked
+async function processData<T, R>(
+  data: T[],
+  transform: TransformFn<T, R>
+): Promise<Settled<R>[]> {
+  return serialMapping(data, transform);
+}
 
-  try {
-    userSchema.parse(user);
-    return Result.success(user);
-  } catch (error) {
-    return Result.failure(error);
+// Type inference works
+const numbers = await processData(
+  ['1', '2', '3'],
+  async (value) => parseInt(value, 10)
+);
+// numbers: Settled<number>[]
+```
+
+2. Error Type Safety
+
+```typescript
+// Custom error types
+class ValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ValidationError';
   }
 }
-```
 
-### External Resources
-
-For more information on Test-Driven Development, refer to the following resources:
-
-- [Jest](https://jestjs.io/docs/getting-started#using-typescript)
-- [ts-jest](https://kulshekhar.github.io/ts-jest/docs/)
-
-## Comprehensive Documentation
-
-### Generating API Documentation
-
-Generate API documentation using TypeDoc:
-
-```bash
-npm run docs
-# or
-yarn docs
-```
-
-### Updating the Memory Bank
-
-Ensure the Memory Bank is updated with the latest project context and patterns. For example, update `memory-bank/activeContext.md` regularly to reflect evolving patterns.
-
-### External Resources
-
-For more information on Comprehensive Documentation, refer to the following resources:
-
-- [TSDoc](https://tsdoc.org/)
-- [TypeDoc](https://typedoc.org/)
-
-## AI Integration
-
-### Using AI for Type Generation
-
-Leverage AI tools to assist with type generation. For example, use AI suggestions to create complex type utilities.
-
-### Enhancing AI-Generated Tests
-
-Refine AI-generated tests to match project patterns. Incorporate feedback loops to improve the generated tests over time.
-
-### External Resources
-
-For more information on AI Integration, refer to the following resources:
-
-- [Cline AI Documentation](https://docs.cline.bot/)
-- [Cline GitHub](https://github.com/cline/cline)
-
-## Performance Testing
-
-### Adding Performance Tests
-
-Integrate a performance testing framework like `Benchmark.js` or `Artillery` to measure and validate the system's performance. Create performance test cases in `tests/performance`.
-
-### Example Performance Test
-
-```typescript
-import { suite, add, cycle, complete } from 'benchmark';
-
-const bench = suite('Performance Test');
-
-bench
-  .add('Example Test', function() {
-    // Code to benchmark
-  })
-  .on('cycle', function(event) {
-    console.log(String(event.target));
-  })
-  .on('complete', function() {
-    console.log('Fastest is ' + this.filter('fastest').map('name'));
-  })
-  .run({ async: true });
-```
-
-## Integration Testing
-
-### Developing Integration Tests
-
-Develop integration tests that cover the interaction between different modules and components. Ensure comprehensive coverage of integration points by creating test cases that simulate real-world scenarios.
-
-### Example Integration Test
-
-```typescript
-import { describe, it, expect } from '@jest/globals';
-import { createUser } from '@/path/to/createUser';
-import { getUser } from '@/path/to/getUser';
-
-describe('User Integration', () => {
-  it('should create and retrieve a user', () => {
-    const user = createUser({ name: 'Jane Doe', email: 'jane@example.com' });
-    expect(user.success).toBe(true);
-
-    if (user.success) {
-      const retrievedUser = getUser(user.value.id);
-      expect(retrievedUser.success).toBe(true);
-      if (retrievedUser.success) {
-        expect(retrievedUser.value).toEqual(user.value);
-      }
+// Error type is preserved
+const results = await serialMapping(
+  collection,
+  async (value) => {
+    if (!isValid(value)) {
+      throw new ValidationError('Invalid value');
     }
-  });
-});
+    return process(value);
+  }
+);
 ```
 
-## Conclusion
+### Best Practices
 
-By following these tutorials, you can effectively use the TFTDD template to build type-safe, well-tested TypeScript applications with comprehensive documentation and AI integration. Ensure to keep your Memory Bank updated and leverage AI tools to enhance your development workflow.
+1. Always handle both success and error cases
+2. Use type guards to narrow types safely
+3. Keep transform functions pure when possible
+4. Use lookup functions for side effects
+5. Validate early and fail fast
+6. Provide meaningful error messages
+7. Use appropriate mapping function for your use case
+
+### Performance Considerations
+
+1. Use `parallelMapping` for independent operations
+2. Use `serialMapping` for dependent operations
+3. Use `generateMapping` for lazy evaluation
+4. Consider memory usage with large collections
+5. Handle errors at appropriate levels
+
+### Next Steps
+
+- Explore advanced mapping patterns
+- Implement custom error handling
+- Create reusable transformations
+- Add comprehensive logging
+- Optimize performance

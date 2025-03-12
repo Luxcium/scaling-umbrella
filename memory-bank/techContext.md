@@ -22,6 +22,10 @@
    * Zod for runtime validation
    * Custom type utilities
    * Type documentation tools
+   * Settled types for mapping operations
+   * Delegate function interfaces
+   * Promise integration patterns
+   * Collection type patterns
    * [TypeScript](https://www.typescriptlang.org/)
    * [Zod](https://github.com/colinhacks/zod)
 
@@ -190,9 +194,10 @@ tftdd-template/
 
 ### Production Dependencies
 
-* `typescript`: TypeScript compiler and language service
+* `typescript`: TypeScript compiler and language service (~5.7.0)
 * `zod`: Runtime type validation
 * `typedoc`: API documentation generation
+* `@jest/globals`: Type-safe testing utilities
 
 ### Development Dependencies
 
@@ -238,6 +243,10 @@ tftdd-template/
    * ESLint rules enforcement
    * Code formatting standards
    * Documentation requirements
+   * No 'any' in test files
+   * Non-enumerable property support
+   * Promise-based transformations
+   * Type-safe delegate functions
 
 2. Testing Constraints
    * Test-Driven Development (TDD) mandatory
