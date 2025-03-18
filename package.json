@@ -29,6 +29,8 @@
   "license": "MIT",
   "_comment": "⚠️ WARNING: NEVER EDIT DEPENDENCIES DIRECTLY! DO NOT manually specify package versions. Always install latest versions via command line using npm to maintain accuracy and security.",
   "dependencies": {
+    "@prisma/client": "^6.5.0",
+    "prisma": "^6.5.0",
     "typedoc": "^0.27.9",
     "zod": "^3.24.2"
   },
@@ -36,7 +38,7 @@
   "devDependencies": {
     "@jest/globals": "^29.7.0",
     "@stylistic/eslint-plugin": "^4.2.0",
-    "@types/node": "^22.13.9",
+    "@types/node": "^22.13.10",
     "eslint": "^9.21.0",
     "eslint-config-prettier": "^10.0.2",
     "eslint-plugin-jest": "^28.11.0",

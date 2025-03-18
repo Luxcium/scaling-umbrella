@@ -16,6 +16,11 @@ export default [
       sourceType: 'module',
       parserOptions: {
         project: ['./tsconfig.json'],
+        ecmaVersion: 2022,
+      },
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
       },
     },
     plugins: {
@@ -47,6 +52,15 @@ export default [
         },
       ],
     },
+    settings: {
+      node: {
+        tryExtensions: ['.ts', '.js', '.json', '.node'],
+      },
+    },
+    env: {
+      node: true,
+      es2022: true,
+    },
   }),
   // Configuration for test files
   ...tseslint.config({
@@ -56,6 +70,11 @@ export default [
       sourceType: 'module',
       parserOptions: {
         project: ['./tsconfig.json'],
+        ecmaVersion: 2022,
+      },
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
       },
     },
     plugins: {
@@ -63,13 +82,6 @@ export default [
       prettier,
       jest: jestPlugin,
       '@typescript-eslint': tsPlugin,
-    },
-    languageOptions: {
-      parser: tseslint.parser,
-      sourceType: 'module',
-      parserOptions: {
-        project: ['./tsconfig.json'],
-      },
     },
     rules: {
       ...js.configs.recommended.rules,
@@ -94,6 +106,16 @@ export default [
       'jest/valid-expect': 'error',
       'no-undef': 'off', // TypeScript handles this
       'jest/no-undef': 'off', // TypeScript handles this
+    },
+    settings: {
+      node: {
+        tryExtensions: ['.ts', '.js', '.json', '.node'],
+      },
+    },
+    env: {
+      node: true,
+      es2022: true,
+      jest: true,
     },
   }),
 ];
